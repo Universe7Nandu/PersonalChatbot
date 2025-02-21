@@ -1,6 +1,3 @@
-Below is a sample **README.md** description with emojis that you can use for your personal chatbot repository. Feel free to copy, paste, and adjust it as needed:
-
----
 
 # 🤖 Generative AI Chatbot by Nandesh Kalashetti
 
@@ -87,5 +84,3 @@ Watch the demo video on YouTube to see the chatbot in action:
 - **Future-Ready:** Designed to demonstrate real-world applicability, making it a powerful tool for both personal growth and professional presentations.
 
 ---
-
-Feel free to modify this README to better suit your needs. If you have any questions or need further assistance, just let me know!
