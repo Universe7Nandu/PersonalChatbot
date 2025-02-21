@@ -4,7 +4,7 @@ Below is a sample **README.md** description with emojis that you can use for you
 
 # 🤖 Generative AI Chatbot by Nandesh Kalashetti
 
-[![Watch Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](YOUR_YOUTUBE_LINK)
+[![Watch Demo](chatbot.png)](https://youtu.be/V0ffoYtm_Uk)
 
 ## Overview
 
@@ -76,8 +76,9 @@ Welcome to the **Generative AI Chatbot** repository! This project is a personal 
 
 ## Demo Video
 
-Watch the demo video on YouTube to see the chatbot in action:  
-[![Demo Video](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](YOUR_YOUTUBE_LINK)
+Watch the demo video on YouTube to see the chatbot in action:
+
+[![Watch Demo](chatbot.png)](https://youtu.be/V0ffoYtm_Uk)
 
 ## Why This Chatbot?
 
