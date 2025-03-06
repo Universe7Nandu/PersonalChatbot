@@ -1,0 +1,8 @@
+streamlit
+pysqlite3-binary
+nest_asyncio
+PyPDF2
+langchain
+langchain-huggingface
+langchain-community
+langchain-groq
