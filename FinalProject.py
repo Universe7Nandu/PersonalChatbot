@@ -7,7 +7,7 @@ import sys
 from PyPDF2 import PdfReader
 from docx import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.docstore.in_memory import InMemoryDocstore
+from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
