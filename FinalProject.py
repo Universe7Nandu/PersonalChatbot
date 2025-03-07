@@ -1,6 +1,9 @@
-import pysqlite3
+# Force use of pysqlite3 as sqlite3 before any other imports.
+import pysqlite3 as sqlite3
 import sys
-sys.modules["sqlite3"] = pysqlite3
+sys.modules["sqlite3"] = sqlite3
+# Optionally, if you are sure the bundled SQLite is new enough but reports incorrectly:
+# sqlite3.sqlite_version = "3.35.5"
 
 import asyncio
 import nest_asyncio
