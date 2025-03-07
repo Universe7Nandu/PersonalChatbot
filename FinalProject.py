@@ -54,7 +54,7 @@ UPLOADED_DOC_SYSTEM_PROMPT = """## Document-based Chat
 - Maintain a friendly, professional tone.
 """
 
-# Allow nested asyncio loops
+# Let Streamlit handle nested async calls
 nest_asyncio.apply()
 
 #############################
@@ -64,9 +64,11 @@ def create_inmemory_vector_store():
     embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
     dummy_embedding = embeddings.embed_query("dummy")
     dim = len(dummy_embedding)
+
     index = faiss.IndexFlatL2(dim)
     docstore = InMemoryDocstore({})
     index_to_docstore_id = {}
+
     return FAISS(
         embedding_function=embeddings,
         index=index,
@@ -234,11 +236,13 @@ def main():
         """)
         st.markdown("---")
         st.header("Conversation History")
+        # Reset chat
         if st.button("New Chat"):
             st.session_state.pop("chat_history", None)
             st.session_state.pop("document_processed", None)
             st.session_state.pop("vector_store", None)
             st.success("New conversation started!")
+        # Show user queries in sidebar
         if "chat_history" in st.session_state and st.session_state["chat_history"]:
             for i, item in enumerate(st.session_state["chat_history"], 1):
                 st.markdown(f"{i}. **You:** {item['question']}")
@@ -265,17 +269,27 @@ def main():
     else:
         st.info("No document uploaded. Using default info...")
 
+    # Initialize chat_history if not present
     if "chat_history" not in st.session_state:
         st.session_state["chat_history"] = []
+
+    # Re-display ALL previous messages in a chat bubble style
+    # (So you see the entire conversation each time the page re-renders)
+    if st.session_state["chat_history"]:
+        for chat in st.session_state["chat_history"]:
+            with st.chat_message("user", avatar="👤"):
+                st.markdown(chat["question"])
+            with st.chat_message("assistant", avatar="🤖"):
+                st.markdown(chat["answer"])
 
     # Chat input (Streamlit 1.33+)
     user_query = st.chat_input("Type your message here...")
     if user_query:
-        # Add user message (with user avatar)
+        # Display user message immediately
         with st.chat_message("user", avatar="👤"):
             st.markdown(user_query)
 
-        # Store user query in session
+        # Add user query to session state
         st.session_state["chat_history"].append({"question": user_query, "answer": ""})
 
         # Generate response
@@ -296,10 +310,10 @@ def main():
             response = asyncio.run(llm.ainvoke([{"role": "user", "content": prompt}]))
             bot_answer = response.content
 
-        # Update chat_history with the assistant's answer
+        # Save assistant's answer
         st.session_state["chat_history"][-1]["answer"] = bot_answer
 
-        # Display assistant bubble (with robot avatar)
+        # Display assistant bubble
         with st.chat_message("assistant", avatar="🤖"):
             st.markdown(bot_answer)
 
