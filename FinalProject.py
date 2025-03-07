@@ -1,3 +1,5 @@
+import pysqlite3
+sys.modules["sqlite3"] = pysqlite3
 import asyncio
 import nest_asyncio
 import streamlit as st
