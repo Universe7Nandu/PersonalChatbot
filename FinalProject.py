@@ -14,7 +14,7 @@ from langchain_groq import ChatGroq
 import faiss
 
 # CONFIGURATION
-GROQ_API_KEY = "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"
+GROQ_API_KEY = "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"
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 # PROMPTS
