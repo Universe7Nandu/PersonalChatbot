@@ -1,11 +1,10 @@
 #############################
-# 1. FORCE NEWER SQLITE3
+# 1. FORCE NEWER SQLITE3 (Optional)
 #############################
 import pysqlite3 as sqlite3
 import sys
 sys.modules["sqlite3"] = sqlite3
-# Optional hack if your environment's SQLite is new enough
-# but incorrectly reported:
+# If needed, you can override the reported version (use cautiously):
 # sqlite3.sqlite_version = "3.35.5"
 
 #############################
@@ -28,14 +27,12 @@ import faiss
 #############################
 # 3. CONFIGURATION
 #############################
-# Example: replace with your own
 GROQ_API_KEY = "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"
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 #############################
 # 4. PROMPTS
 #############################
-# System prompt that handles short queries with emojis
 DEFAULT_SYSTEM_PROMPT = """## Friendly AI Assistant
 - If no document is uploaded, use the default info below.
 - If the user query is short (≤8 words), respond with a brief (≤6 words) answer plus fun emojis.
@@ -57,22 +54,19 @@ UPLOADED_DOC_SYSTEM_PROMPT = """## Document-based Chat
 - Maintain a friendly, professional tone.
 """
 
-# Let Streamlit handle nested async calls
+# Allow nested asyncio loops
 nest_asyncio.apply()
 
 #############################
 # 5. CORE FUNCTIONS
 #############################
 def create_inmemory_vector_store():
-    """Create a new, purely in-memory FAISS vector store."""
     embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
     dummy_embedding = embeddings.embed_query("dummy")
     dim = len(dummy_embedding)
-
     index = faiss.IndexFlatL2(dim)
     docstore = InMemoryDocstore({})
     index_to_docstore_id = {}
-
     return FAISS(
         embedding_function=embeddings,
         index=index,
@@ -81,7 +75,6 @@ def create_inmemory_vector_store():
     )
 
 def process_document(file):
-    """Reads a file (PDF, CSV, TXT, DOCX, MD) and returns its text."""
     ext = os.path.splitext(file.name)[1].lower()
     try:
         if ext == ".pdf":
@@ -104,7 +97,6 @@ def process_document(file):
         return ""
 
 def chunk_text(text):
-    """Split text into smaller chunks for vector store."""
     splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     return splitter.split_text(text)
 
@@ -112,9 +104,9 @@ def chunk_text(text):
 # 6. MAIN STREAMLIT APP
 #############################
 def main():
-    st.set_page_config(page_title="AI Resume Assistant", layout="wide")
+    st.set_page_config(page_title="AI Chat Demo", layout="wide")
 
-    # ---- CUSTOM CSS ----
+    # ---- CUSTOM CSS for bubble-like chat ----
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
@@ -130,7 +122,7 @@ def main():
         visibility: hidden; 
     }
     .chat-container {
-        max-width: 900px;
+        max-width: 800px;
         margin: 40px auto 60px auto;
         background: rgba(255,255,255,0.15);
         backdrop-filter: blur(8px);
@@ -232,7 +224,7 @@ def main():
         st.markdown("---")
         st.header("How to Use")
         st.markdown("""
-1. **Upload** your resume/doc (optional).  
+1. **Upload** a document (optional).  
 2. **Process** it if uploaded.  
 3. **Ask** questions below.  
 4. **New Chat** resets the conversation.
@@ -242,13 +234,11 @@ def main():
         """)
         st.markdown("---")
         st.header("Conversation History")
-        # "New Chat" button resets everything
         if st.button("New Chat"):
             st.session_state.pop("chat_history", None)
             st.session_state.pop("document_processed", None)
             st.session_state.pop("vector_store", None)
             st.success("New conversation started!")
-        # Display conversation history (user queries only, if desired)
         if "chat_history" in st.session_state and st.session_state["chat_history"]:
             for i, item in enumerate(st.session_state["chat_history"], 1):
                 st.markdown(f"{i}. **You:** {item['question']}")
@@ -257,14 +247,14 @@ def main():
 
     # ---- MAIN CONTAINER ----
     st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
-    st.markdown("<h1 class='chat-title'>AI Resume Assistant</h1>", unsafe_allow_html=True)
-    st.markdown("<p class='chat-subtitle'>Upload Your Resume or Use Default Info</p>", unsafe_allow_html=True)
+    st.markdown("<h1 class='chat-title'>AI Chat Demo</h1>", unsafe_allow_html=True)
+    st.markdown("<p class='chat-subtitle'>Upload Your Document or Use Default Info</p>", unsafe_allow_html=True)
 
-    # File uploader
-    uploaded_file = st.file_uploader("Upload a PDF/DOCX/TXT/CSV/MD file", type=["pdf", "docx", "txt", "csv", "md"])
+    # Upload file
+    uploaded_file = st.file_uploader("Upload PDF/DOCX/TXT/CSV/MD", type=["pdf", "docx", "txt", "csv", "md"])
     if uploaded_file and not st.session_state.get("document_processed"):
         if st.button("Process Document"):
-            with st.spinner("Processing document..."):
+            with st.spinner("Reading & Embedding your document..."):
                 text = process_document(uploaded_file)
                 if text:
                     chunks = chunk_text(text)
@@ -273,30 +263,29 @@ def main():
                     st.session_state["document_processed"] = True
                     st.success(f"Document processed into {len(chunks)} sections!")
     else:
-        st.info("No document uploaded. Using default info.")
+        st.info("No document uploaded. Using default info...")
 
-    # Initialize chat history if not present
     if "chat_history" not in st.session_state:
         st.session_state["chat_history"] = []
 
-    # Chat input (uses Streamlit's new chat_input)
-    user_query = st.chat_input("Type your message here... (Press Enter)")
+    # Chat input (Streamlit 1.33+)
+    user_query = st.chat_input("Type your message here...")
     if user_query:
-        # Add user's question to chat_history
-        st.session_state["chat_history"].append({"question": user_query, "answer": ""})
-        with st.chat_message("user"):
+        # Add user message (with user avatar)
+        with st.chat_message("user", avatar="👤"):
             st.markdown(user_query)
+
+        # Store user query in session
+        st.session_state["chat_history"].append({"question": user_query, "answer": ""})
 
         # Generate response
         with st.spinner("Thinking..."):
             if st.session_state.get("document_processed") and "vector_store" in st.session_state:
-                # If doc is processed, build prompt with doc context
                 vector_store = st.session_state["vector_store"]
                 docs = vector_store.similarity_search(user_query, k=3)
                 context = "\n".join(d.page_content for d in docs)
                 prompt = f"{UPLOADED_DOC_SYSTEM_PROMPT}\nContext:\n{context}\nQuestion: {user_query}"
             else:
-                # Otherwise, use default info
                 prompt = f"{DEFAULT_SYSTEM_PROMPT}\nQuestion: {user_query}"
 
             llm = ChatGroq(
@@ -307,25 +296,17 @@ def main():
             response = asyncio.run(llm.ainvoke([{"role": "user", "content": prompt}]))
             bot_answer = response.content
 
-        # Save assistant's answer to chat_history
+        # Update chat_history with the assistant's answer
         st.session_state["chat_history"][-1]["answer"] = bot_answer
 
-        # Display assistant message
-        with st.chat_message("assistant"):
+        # Display assistant bubble (with robot avatar)
+        with st.chat_message("assistant", avatar="🤖"):
             st.markdown(bot_answer)
-
-    # Display full conversation at the bottom (optional)
-    if st.session_state["chat_history"]:
-        st.markdown("<hr>", unsafe_allow_html=True)
-        st.markdown("### Full Conversation")
-        for i, item in enumerate(st.session_state["chat_history"], 1):
-            st.markdown(f"**{i}. You:** {item['question']}")
-            st.markdown(f"**Assistant:** {item['answer']}")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
 #############################
-# 7. RUN THE APP
+# 7. RUN
 #############################
 if __name__ == "__main__":
     main()
