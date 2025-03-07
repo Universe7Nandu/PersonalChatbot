@@ -1,11 +1,12 @@
 import pysqlite3
+import sys
 sys.modules["sqlite3"] = pysqlite3
+
 import asyncio
 import nest_asyncio
 import streamlit as st
 import pandas as pd
 import os
-import sys
 from PyPDF2 import PdfReader
 from docx import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -14,9 +15,6 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
 import faiss
-import pysqlite3
-import sys
-sys.modules["sqlite3"] = pysqlite3
 
 # CONFIGURATION
 GROQ_API_KEY = "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"
