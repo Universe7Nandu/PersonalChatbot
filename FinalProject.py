@@ -12,6 +12,9 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
 import faiss
+import pysqlite3
+import sys
+sys.modules["sqlite3"] = pysqlite3
 
 # CONFIGURATION
 GROQ_API_KEY = "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"
